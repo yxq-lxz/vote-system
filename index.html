@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 移动端核心适配标签 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>“校园生灵・镜藏萌动” —— 校园动物摄影投票</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #f0f9ff, #f5f7fa);
+            padding: 15px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #222;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        header h1 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #1e40af;
+        }
+
+        header p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* 适配手机按钮布局 */
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 16px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+        }
+
+        .tab-btn.active {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px 15px;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fade 0.3s ease;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .upload-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        #preview {
+            max-width: 160px;
+            max-height: 160px;
+            margin: 10px 0;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #15803d;
+        }
+
+        /* 手机端卡片自适应 */
+        .vote-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .player-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .player-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .player-info {
+            padding: 12px;
+        }
+
+        .player-desc {
+            color: #475569;
+            font-size: 13px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            min-height: 30px;
+        }
+
+        .vote-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vote-count {
+            color: #dc2626;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .vote-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .vote-btn:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        .vote-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .empty-tip {
+            text-align: center;
+            color: #9ca3af;
+            padding: 40px 0;
+            grid-column: 1 / -1;
+            font-size: 15px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .admin-table th, .admin-table td {
+            padding: 8px 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 12px;
+        }
+        .admin-table th {
+            background: #2563eb;
+            color: white;
+        }
+        .admin-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .admin-btn {
+            padding: 7px 10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 4px;
+            font-size: 13px;
+        }
+        .export-btn {
+            background: #16a34a;
+        }
+        .reset-btn {
+            background: #f59e0b;
+        }
+        .admin-input {
+            padding: 9px;
+            width: 180px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🐾 “校园生灵・镜藏萌动” —— 校园动物摄影投票</h1>
+            <p>发现校园里的可爱生灵 · 为你最爱的作品投票</p>
+        </header>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="vote">我要投票</button>
+            <button class="tab-btn" data-tab="upload">我要参赛</button>
+            <button class="tab-btn" data-tab="admin">管理员</button>
+        </div>
+
+        <div id="vote" class="tab-content active">
+            <div class="vote-list" id="voteList">
+                <div class="empty-tip">暂无作品，快来上传你的校园动物摄影吧！</div>
+            </div>
+        </div>
+
+        <div id="upload" class="tab-content">
+            <div class="upload-form">
+                <div class="form-group">
+                    <label>📷 摄影作品照片（支持20MB以上大图）</label>
+                    <input type="file" id="photo" accept="image/*" required>
+                    <img id="preview" alt="作品预览">
+                </div>
+
+                <div class="form-group">
+                    <label>👤 姓名/学号（仅管理员可见）</label>
+                    <input type="text" id="name" placeholder="请输入你的姓名或学号" required>
+                </div>
+
+                <div class="form-group">
+                    <label>📝 作品描述（拍摄地点/动物介绍/心情等）</label>
+                    <textarea id="desc" placeholder="例如：在图书馆旁偶遇的小猫咪，阳光下特别温柔～"></textarea>
+                </div>
+
+                <button class="submit-btn" onclick="uploadPlayer()">✅ 提交参赛</button>
+            </div>
+        </div>
+
+        <div id="admin" class="tab-content">
+            <div style="text-align:center; margin-bottom:20px;">
+                <input type="password" class="admin-input" id="adminPwd" placeholder="请输入管理员密码">
+                <button class="admin-btn" onclick="adminLogin()">登录</button>
+                <br><br>
+                <button class="admin-btn export-btn" onclick="exportZip()" style="display:none;" id="exportBtn">📦 导出所有照片（ZIP）</button>
+                <button class="admin-btn reset-btn" onclick="resetAll()" style="display:none;" id="resetBtn">🔄 重置投票，开启新轮</button>
+            </div>
+            <div id="adminPanel" style="display:none;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>姓名/学号</th>
+                            <th>作品照片</th>
+                            <th>作品描述</th>
+                            <th>票数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                const tabId = btn.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        const photoInput = document.getElementById('photo');
+        const previewImg = document.getElementById('preview');
+        let rawFile = null;
+
+        photoInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                rawFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function getPlayers() {
+            return JSON.parse(localStorage.getItem('animal_players')) || [];
+        }
+
+        function savePlayers(players) {
+            localStorage.setItem('animal_players', JSON.stringify(players));
+        }
+
+        // 大图压缩，支持20MB+图片，手机端同样兼容
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxSize = 1600;
+                    if (width > height && width > maxSize) {
+                        height *= maxSize / width;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width *= maxSize / height;
+                        height = maxSize;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(
+                        (blob) => {
+                            resolve(blob);
+                        },
+                        file.type,
+                        0.85
+                    );
+                };
+            });
+        }
+
+        async function uploadPlayer() {
+            const name = document.getElementById('name').value.trim();
+            const desc = document.getElementById('desc').value.trim();
+            if (!name || !rawFile) {
+                alert('请填写姓名/学号并上传作品！');
+                return;
+            }
+
+            alert('正在处理大图，请稍候…（大图片需要几秒）');
+            const compressed = await compressImage(rawFile);
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const players = getPlayers();
+                players.push({
+                    id: Date.now(),
+                    name,
+                    desc,
+                    photo: e.target.result,
+                    type: rawFile.type,
+                    votes: 0
+                });
+                savePlayers(players);
+
+                alert('作品上传成功！');
+                document.getElementById('name').value = '';
+                document.getElementById('desc').value = '';
+                document.getElementById('photo').value = '';
+                previewImg.style.display = 'none';
+                rawFile = null;
+
+                tabBtns[0].click();
+                renderVoteList();
+            };
+            reader.readAsDataURL(compressed);
+        }
+
+        function renderVoteList() {
+            const voteList = document.getElementById('voteList');
+            const players = getPlayers();
+
+            if(players.length === 0) {
+                voteList.innerHTML = '<div class="empty-tip">暂无作品，快来上传你的校园动物摄影吧！</div>';
+                return;
+            }
+
+            players.sort((a, b) => b.votes - a.votes);
+            
+            let html = '';
+            players.forEach(player => {
+                const voted = localStorage.getItem('voted_' + player.id);
+                html += `
+                    <div class="player-card">
+                        <img src="${player.photo}" class="player-img">
+                        <div class="player-info">
+                            <p class="player-desc">${player.desc || '暂无描述'}</p>
+                            <div class="vote-box">
+                                <span class="vote-count">票数：${player.votes}</span>
+                                <button class="vote-btn" onclick="vote(${player.id})" ${voted ? 'disabled' : ''}>
+                                    ${voted ? '已投票' : '投一票'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            voteList.innerHTML = html;
+        }
+
+        function vote(playerId) {
+            const players = getPlayers();
+            const index = players.findIndex(p => p.id === playerId);
+            
+            if(index !== -1) {
+                players[index].votes += 1;
+                savePlayers(players);
+                localStorage.setItem('voted_' + playerId, 'true');
+                renderVoteList();
+            }
+        }
+
+        // 管理员密码：bcyxsgltd
+        function adminLogin() {
+            const pwd = document.getElementById('adminPwd').value;
+            if (pwd === 'bcyxsgltd') {
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('exportBtn').style.display = 'inline-block';
+                document.getElementById('resetBtn').style.display = 'inline-block';
+                renderAdmin();
+                alert('登录成功！');
+            } else {
+                alert('密码错误！');
+            }
+        }
+
+        function renderAdmin() {
+            const players = getPlayers();
+            const body = document.getElementById('adminBody');
+            let html = '';
+            players.forEach(p => {
+                html += `
+                <tr>
+                    <td>${p.name}</td>
+                    <td><img src="${p.photo}" class="admin-img"></td>
+                    <td>${p.desc || '-'}</td>
+                    <td>${p.votes}</td>
+                </tr>`;
+            });
+            body.innerHTML = html;
+        }
+
+        async function exportZip() {
+            const zip = new JSZip();
+            const players = getPlayers();
+            if (players.length === 0) {
+                alert('没有可导出的作品！');
+                return;
+            }
+            alert('正在导出所有照片，请稍候…');
+
+            for (const p of players) {
+                const res = await fetch(p.photo);
+                const blob = await res.blob();
+                let ext = 'bin';
+                if (blob.type.includes('png')) ext = 'png';
+                else if (blob.type.includes('jpeg')) ext = 'jpg';
+                else if (blob.type.includes('webp')) ext = 'webp';
+                else ext = 'jpg';
+
+                const fileName = p.name.replace(/[^0-9a-zA-Z\u4e00-\u9fa5]/g, '_') + '.' + ext;
+                zip.file(fileName, blob);
+            }
+
+            zip.generateAsync({ type: 'blob' }).then(blob => {
+                saveAs(blob, '校园动物摄影作品.zip');
+                alert('导出成功！');
+            });
+        }
+
+        function resetAll() {
+            if (confirm('确定要重置所有数据吗？\n这将清空所有作品和投票记录，开启新的一轮！')) {
+                localStorage.removeItem('animal_players');
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('voted_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                alert('已重置！可以开始新一轮投票了。');
+                renderVoteList();
+                renderAdmin();
+            }
+        }
+
+        window.onload = renderVoteList;
+    </script>
+</body>
+</html>
